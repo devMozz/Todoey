@@ -8,8 +8,11 @@
 
 import Foundation
 
-class Item {
+//Encodable - Json 형식
+class Item : Codable {
+    
     var title: String = ""
     var done: Bool = false
+    
     
 }
