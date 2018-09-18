@@ -11,7 +11,7 @@ import RealmSwift
 
 class Category : Object {
     @objc dynamic var name : String = ""
-    
+    @objc dynamic var colour : String = ""
     //parentCategory = LinkingObjects(fromType: Category.self, property: "items")
     let items = List<Item>()
     

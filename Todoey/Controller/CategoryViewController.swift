@@ -8,19 +8,24 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
     
     let realm = try! Realm()
     
     var categories : Results<Category>?
     
-//    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    //    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         loadCategories()
+        
+        tableView.rowHeight = 80.0
+        
+        tableView.separatorStyle = .none
         
     }
     
@@ -39,9 +44,11 @@ class CategoryViewController: UITableViewController {
     //각 행에 텍스트 뿌려주기
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet!"
+        
+        cell.backgroundColor = UIColor(hexString: categories?[indexPath.row].colour ?? "1D9BF6")
         
         return cell
         
@@ -49,7 +56,6 @@ class CategoryViewController: UITableViewController {
     
     
     //MARK: - Delegate Methods
-    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //행을 선택하면 다음 VC로 이동
         performSegue(withIdentifier: "goToItems", sender: self)
@@ -82,22 +88,41 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    
+    //MARK: - Load Categories List
     func loadCategories() {
         
-//        let request : NSFetchRequest<Category> = Category.fetchRequest()
-//
-//        do{
-//            categories = try context.fetch(request)
-//        } catch {
-//            print("Error loading categories \(error)")
-//        }
+        //        let request : NSFetchRequest<Category> = Category.fetchRequest()
+        //
+        //        do{
+        //            categories = try context.fetch(request)
+        //        } catch {
+        //            print("Error loading categories \(error)")
+        //        }
         
         
         //단 한 줄.... 난 지금까지 무얼하고 있었던 것인가!!!!!!
         categories = realm.objects(Category.self)
-
+        
         tableView.reloadData()
-
+        
+    }
+    
+    //MARK: - Delete Data From Swipe
+    override func updateModel(at indexPath: IndexPath) {
+        
+        super.updateModel(at: indexPath)
+        
+        if let categoryForDeletion = self.categories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                print("Error deleting category \(error)")
+            }
+            
+        }
     }
     
     
@@ -112,8 +137,10 @@ class CategoryViewController: UITableViewController {
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             let newCategory = Category()
             newCategory.name = textField.text!
+            //이제 스트링이다!
+            newCategory.colour = UIColor.randomFlat.hexValue()
             
-//            self.categories.append(newCategory)
+            //self.categories.append(newCategory)
             
             self.save(category: newCategory)
         }
@@ -129,7 +156,5 @@ class CategoryViewController: UITableViewController {
         
     }
     
-    
-    
-    
 }
+

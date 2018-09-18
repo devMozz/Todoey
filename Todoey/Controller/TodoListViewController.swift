@@ -9,8 +9,9 @@
 import UIKit
 import CoreData
 import RealmSwift
+import SwipeCellKit
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
     
     //    var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogoron"]
     var itemArray : Results<Item>?
@@ -19,6 +20,8 @@ class TodoListViewController: UITableViewController {
     var selectedCategory : Category? {
         didSet {
             loadItems()
+            
+            tableView.rowHeight = 80.0
         }
     }
     
@@ -55,7 +58,7 @@ class TodoListViewController: UITableViewController {
     //cellForRowAt - 테이블뷰에 텍스트 뿌리기
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         //        let cell = UITableViewCell(style: .default, reuseIdentifier: "TodoItemCell")
         
         if let item = itemArray?[indexPath.row] {
@@ -209,6 +212,18 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    override func updateModel(at indexPath: IndexPath) {
+        if let item = itemArray?[indexPath.row] {
+            do {
+                try realm.write {
+                    realm.delete(item)
+                }
+            } catch {
+                print("Error deleting Item \(error)")
+            }
+        }
+    }
+    
 }
 
 
@@ -222,15 +237,15 @@ extension TodoListViewController: UISearchBarDelegate {
         
         tableView.reloadData()
         
-//        let request : NSFetchRequest<Item> = Item.fetchRequest()
-//
-//        //검색한다
-//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-//
-//        //정렬한다
-//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-//
-//        loadItems(with: request, predicate: predicate)
+        //        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        //
+        //        //검색한다
+        //        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        //
+        //        //정렬한다
+        //        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        //
+        //        loadItems(with: request, predicate: predicate)
         
         //        do {
         //            itemArray = try context.fetch(request)
